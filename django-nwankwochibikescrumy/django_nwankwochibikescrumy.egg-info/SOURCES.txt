@@ -1,0 +1,15 @@
+MANIFEST.in
+README.rst
+setup.py
+django_nwankwochibikescrumy.egg-info/PKG-INFO
+django_nwankwochibikescrumy.egg-info/SOURCES.txt
+django_nwankwochibikescrumy.egg-info/dependency_links.txt
+django_nwankwochibikescrumy.egg-info/top_level.txt
+nwankwochibikescrumy/__init__.py
+nwankwochibikescrumy/admin.py
+nwankwochibikescrumy/apps.py
+nwankwochibikescrumy/models.py
+nwankwochibikescrumy/tests.py
+nwankwochibikescrumy/urls.py
+nwankwochibikescrumy/views.py
+nwankwochibikescrumy/migrations/__init__.py

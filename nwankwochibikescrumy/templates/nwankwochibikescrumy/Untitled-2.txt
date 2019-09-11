@@ -1,0 +1,47 @@
+def move_goal(request, goal_id):
+    context = {}
+    try:
+        goal = ScrumyGoals.objects.get(goal_id=goal_id)
+    except ScrumyGoals.DoesNotExist:
+        context.update({
+            'message': 'A record with that goal id does not exist'
+        })
+        return render(request, 'nwankwochibikescrumy/exception.html', context)
+
+    if request.method == 'POST':
+        form = MoveGoalForm(request.POST)
+        if form.is_valid():
+            goal_status_name = form.cleaned_data.get("status_name")
+            goal.goal_status = GoalStatus.objects.filter(status_name=goal_status_name).first()
+            goal.save()
+            return redirect('nwankwochibikescrumy:home')
+    else:
+        try:
+            group = Group.objects.get(name="Admin")
+            user_group = request.user.groups.all().first()
+            is_admin = True if request.user.groups.all().filter(name="Admin").first() == group else False
+            print(is_admin)
+        except ObjectDoesNotExist:
+            context.update({
+                'message': 'A record with that group name does not exist'
+            })
+            return render(request, 'nwankwochibikescrumy/exception.html', context)
+        if not is_admin:
+            if goal.user != request.user:
+                print(request.user.groups.all().filter(name="Admin").first())
+                if not is_admin:
+                    context.update({
+                        'message': "You're not authorized to move this goal"
+                    })
+                    return render(request, 'nwankwochibikescrumy/exception.html', context)
+
+        if user_group == Group.objects.get(name="Developer"):
+            form = MoveGoalFormDeveloper()
+        else:
+            form = MoveGoalForm()
+
+    context.update({
+        'goal': goal,
+        'form': form
+    })
+    return render(request, 'nwankwochibikescrumy/move_goal.html', context)

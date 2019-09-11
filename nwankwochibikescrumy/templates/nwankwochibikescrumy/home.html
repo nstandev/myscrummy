@@ -1,0 +1,144 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>nwankwochibikescrumy | home</title>
+
+    <style>
+        body, h4{
+            margin: 0px !important;
+            font-family: sans-serif !important;
+        }
+        table{
+            border: 1px solid #c7c7ca;
+            width: 60%;
+            margin-left: 20% !important;
+            margin-bottom: 50px;
+        }
+        th{
+            text-align: left;
+        }
+        tr{
+            background-color: #eee;
+            border: 1px solid black;
+            border-spacing: 0px !important;
+        }
+        td{
+
+            border-spacing: 0px;
+        }
+
+        .nav-btns{
+            display: inline-block;
+            padding: 10px 20px;
+            background-color:#5a5a63;
+            color: #eee !important;
+            text-decoration: none;
+            margin-right: 20px;
+            border-radius: 8px 8px 0px 0px;
+        }
+
+        .nav-btns:hover{
+            background-color:#bdbdc2;
+            color: rgb(17, 16, 16) !important;
+        }
+
+        a{
+            color: #eee !important;
+            text-decoration: none;
+            padding: 10px 10px;
+        }
+
+        .move-links{
+            color: #e84487 !important;
+            text-decoration: underline;
+        }
+    </style>
+    <link rel="stylesheet" type="text/css" href="{% static 'nwankwochibikescrumy/style.css' %}">
+</head>
+<body>
+
+{#logged in as: {{ request.user }} <br>#}
+{#{{ perm }} <br> {{ groups }} <br>#}
+<div style="background-color:#5a5a63; color:#eee !important; width:98%; float:left; padding: 20px 1%; margin-bottom: 30px;">
+    <div style="width: 70%; float:left;">
+        <h4>nwankwochibikescrumy</h4>
+    </div>
+    <div style="width: 30%; float:left;">
+        <a href="">{{ request.user.first_name}} {{ request.user.last_name }}</a>
+        <a>role: {{ groups.first }}</a>
+        <a href="{% url 'nwankwochibikescrumy:logout' %}">log out</a>
+    </div>
+</div>
+<div style="width:60%; margin-left:20%;">
+    <a class="nav-btns" href="{% url 'nwankwochibikescrumy:update_group' %}">change role</a>
+    <a class="nav-btns" href="{% url 'nwankwochibikescrumy:addgoal' %}">create new goal</a>
+    
+</div>
+    <table>
+        <thead>
+            <th>User</th>
+            <th>Weekly Goals</th>
+            <th>Daily Goals</th>
+            <th>Verify Goals</th>
+            <th>Done Goals</th>
+        </thead>
+        {% if users is not None %}
+            {% for user in users %}
+                <tr>
+                    <td>{{ user }}</td>
+                    <td>
+                        {% for goal  in user.goals.all %}
+                            {% if goal.goal_status.id == 1 %}
+                                <b>{{ goal.goal_id }}.</b> {{ goal.goal_name }} <br><br>
+                                <a class="move-links" href="{% url 'nwankwochibikescrumy:movegoal' goal.goal_id %}" data-{{ user }}>move this goal</a>
+                                <br><br>
+                            {% endif %}
+                        {% endfor %}
+                    </td>
+                    <td>
+                        {% for goal  in user.goals.all %}
+                            {% if goal.goal_status.id == 2 %}
+                                <b>{{ goal.goal_id }}.</b> {{ goal.goal_name }} <br><br>
+                                <a class="move-links" href="{% url 'nwankwochibikescrumy:movegoal' goal.goal_id %}">move this goal</a>
+                                <br><br>
+                            {% endif %}
+                        {% endfor %}
+                    </td>
+                    <td>
+                        {% for goal  in user.goals.all %}
+                            {% if goal.goal_status.id == 3 %}
+                                <b>{{ goal.goal_id }}.</b> {{ goal.goal_name }} <br><br>
+                                <a class="move-links" href="{% url 'nwankwochibikescrumy:movegoal' goal.goal_id %}">move this goal</a>
+                                <br><br>
+                            {% endif %}
+                        {% endfor %}
+                    </td>
+                    <td>
+                        {% for goal  in user.goals.all %}
+                            {% if goal.goal_status.id == 4 %}
+                                <b>{{ goal.goal_id }}.</b> {{ goal.goal_name }} <br><br>
+                                <a class="move-links" href="{% url 'nwankwochibikescrumy:movegoal' goal.goal_id %}">move this goal</a>
+                                <br><br>
+                            {% endif %}
+                        {% endfor %}
+                    </td>
+                </tr>
+            {% endfor %}
+        {% endif %}
+    </table>
+</body>
+<script>
+    {#if(document.readyState === "loading"){#}
+    {#    document.addEventListener("click", function (event) {#}
+    {#        let attr = "data-" + "{{ request.user }}";#}
+    {#        let group = "{{ request-user }}"#}
+    {#        if(!event.target.hasAttribute(attr)){#}
+                {#event.preventDefault();#}
+    {#            alert("You don't have the permission to move this goal");#}
+    {#        }#}
+    {#    })#}
+    {#}#}
+</script>
+</html>
