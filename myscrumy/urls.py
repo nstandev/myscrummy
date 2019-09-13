@@ -17,8 +17,11 @@ from django.conf.urls import url
 from django.contrib import admin
 from django.urls import path, include
 
+from nwankwochibikescrumy import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('nwankwochibikescrumy/', include('nwankwochibikescrumy.urls')),
+    path('', include('nwankwochibikescrumy.urls'))
 ]
+# views.index
