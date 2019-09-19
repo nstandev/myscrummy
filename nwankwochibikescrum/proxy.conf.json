@@ -1,6 +1,6 @@
 {
   "/nwankwochibikescrumy": {
-    "target": "https://myscrummy.herokuapp.com/",
+    "target": "http://localhost:8000",
     "secure": true,
     "changeOrigin": true
   }
