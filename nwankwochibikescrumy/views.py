@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 import jwt
 from django.contrib.auth import authenticate, login, logout
@@ -21,8 +21,8 @@ from rest_framework_simplejwt.views import TokenObtainPairView
 from myscrumy import settings
 from nwankwochibikescrumy.form import SignupForm, CreateGoalForm, MoveGoalForm, MoveGoalFormDeveloper, UpdateUserGroup
 from nwankwochibikescrumy.serializers import UserSerializer, ScrumyGoalsSerializer, ScrumyHistorySerializer, \
-    GoalStatusSerializer, ScrumUserSerializer
-from .models import ScrumyGoals, GoalStatus, ScrumyHistory, ScrumUser
+    GoalStatusSerializer, ScrumUserSerializer, ProjectSerializer, FilteredUserSerializerForProject
+from .models import ScrumyGoals, GoalStatus, ScrumyHistory, ScrumUser, Project
 from django.contrib.auth.models import User, Group
 from .miscellaneous import generate_unique_random_int as get_random_integer
 from . import signals
@@ -241,6 +241,7 @@ class UserSerializerViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def create(self, request, *args, **kwargs):
+        print("login")
         user = request.user
         if user is not None:
             user_serializer = UserSerializer(user)
@@ -287,6 +288,22 @@ class UserSerializerViewSet(viewsets.ModelViewSet):
 
         return token.decode('utf-8')
 
+    # get the users linked to a particular project
+    @action(methods=['get'], detail=True, url_path="projects-users", url_name="projects_users")
+    def get_users_for_project(self, request, pk=None):
+        project = Project.objects.get(pk=pk)
+        users = project.users.all()
+
+        serializer = UserSerializer(users, many=True)
+
+        filtered_serializer = FilteredUserSerializerForProject(
+            users, context={'project_id': pk}, many=True)
+
+        print(filtered_serializer.data)
+
+        print("get_users_for_project: ", project.users.all())
+        return Response(filtered_serializer.data)
+
 
 class ScrumyGoalsSerializerViewSet(viewsets.ModelViewSet):
     queryset = ScrumyGoals.objects.all().filter(is_deleted=False)
@@ -324,8 +341,16 @@ class ScrumyGoalsSerializerViewSet(viewsets.ModelViewSet):
                                    owner=username,
                                    user=user,
                                    goal_status=allowed_goal_status_dev)
-                goal.save()
+
                 serializer = ScrumyGoalsSerializer(goal)
+
+                try:
+                    project = Project.objects.get(name=request.data.get('project_name'))
+                    goal.project = project
+                    goal.save()
+                except ObjectDoesNotExist:
+                    return Response('errorMessage', status=401)
+
                 return Response(serializer.data, status=200)
             else:
                 return Response('errorMessage', status=401)
@@ -419,12 +444,24 @@ class ScrumUserSerializerViewSet(viewsets.ModelViewSet):
 
     def create(self, request, *args, **kwargs):
         print("wrong post")
+
+        if not request.data.get('role'):
+            return Response(status=401)
+
+        print(request.data.get('role'))
+
+        try:
+            group = Group.objects.get(name=request.data.get('role'))
+        except ObjectDoesNotExist:
+            print("1. exception")
+            return Response(status=401)
+
         form_data = {
             "first_name": request.data.get("firstname"),
             "last_name": request.data.get("lastname"),
             "username": request.data.get("username"),
             "email": request.data.get("email"),
-            "group": "4",
+            "group": group.id,
             "password": request.data.get("password"),
             "confirm_password": request.data.get("password")
         }
@@ -436,7 +473,7 @@ class ScrumUserSerializerViewSet(viewsets.ModelViewSet):
             first_name = form.cleaned_data.get('first_name')
             last_name = form.cleaned_data.get('last_name')
             username = form.cleaned_data.get('username')
-            group_name = "Owner"
+            group = form.cleaned_data.get('group')
             password = form.cleaned_data.get('password')
             password2 = form.cleaned_data.get('confirm_password')
 
@@ -449,18 +486,68 @@ class ScrumUserSerializerViewSet(viewsets.ModelViewSet):
                 new_user.set_password(password)
 
                 try:
-                    group = Group.objects.get(name=group_name)
+                    print("group name:", group.name)
+                    group = Group.objects.get(name=group)
                     new_user.save()
                 except ObjectDoesNotExist:
+                    print("2. exception")
                     context = {'message': "Group doesn't exist"}
                     return Response(status=400,)
 
                 group.user_set.add(new_user)
                 serializer = UserSerializer(new_user)
+
+                # handle creating a new project if user is owner
+                if group.name == "Owner":
+                    print("lets make a  new project")
+                    project_name = request.data.get('new_project')
+                    print("project-name: ", request.data)
+                    new_project = Project(name=project_name, created_by=new_user.username, time_of_creation=datetime.now())
+                    new_project.save()
+
+                    new_project.users.add(new_user)
+
                 return Response(serializer.data, status=200)
+            print("3. exception")
             return Response(status=400)
+        print("4. exception")
         return Response(status=400)
 
+    @action(methods=['get'], detail=True, url_path='user-projects', url_name='user_projects')
+    def get_user_projects(self, request, pk=None):
+        try:
+            user = User.objects.get(pk=pk)
+            projects = user.project_set.all()
+        except ObjectDoesNotExist:
+            return Response(status=400)
+
+        serializer = ProjectSerializer(projects, many=True)
+
+        print(serializer.data)
+        return Response(serializer.data)
+
+    @action(methods=['post'], detail=True, url_path='add-user-project', url_name='add_user_project')
+    def add_user_project(self, request, pk=None):
+        try:
+            user = User.objects.get(pk=pk)
+            project = Project.objects.filter(name=request.data.get('project_name')).first()
+            if project:
+                project.users.add(user)
+                project.save()
+        except ObjectDoesNotExist:
+            return Response(status=400)
+
+        serializer = ProjectSerializer(project, many=False)
+
+        print(serializer.data)
+        return Response(serializer.data)
+
+
+class ProjectSerializerViewSet(viewsets.ModelViewSet):
+    queryset = Project.objects.all()
+    serializer_class = ProjectSerializer
+    authentication_classes = ()
+    permission_classes = []
 
 class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
     @classmethod
@@ -468,12 +555,23 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
         token = super().get_token(user)
 
         user_group = user.groups.all().first()
+        # projects = Project.objects.filter()
+        print(user.project_set.all())
+        print(user)
+
+        user_projects = user.project_set.all()
+
+        serializer = ProjectSerializer(user_projects, many=True)
+
+        print(serializer.data)
 
         # Add custom claims
+        token['id'] = user.id
         token['first_name'] = user.first_name
         token['last_name'] = user.last_name
         token['username'] = user.username
         token['role'] = str(user_group)
+        token['projects'] = serializer.data
         # ...
 
         return token

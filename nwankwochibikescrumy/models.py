@@ -20,6 +20,7 @@ class ScrumyGoals(models.Model):
     goal_status = models.ForeignKey(GoalStatus, on_delete=models.PROTECT)
     is_deleted = models.BooleanField(default=False)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='goals')
+    project = models.ForeignKey("Project", on_delete=models.CASCADE, related_name='goals')
 
     def __str__(self):
         output = """Goal name: {}
@@ -44,4 +45,11 @@ class ScrumyHistory(models.Model):
 
 class ScrumUser(models.Model):
     pass
+
+
+class Project(models.Model):
+    name = models.CharField(max_length=200)
+    created_by = models.CharField(max_length=200)
+    users = models.ManyToManyField(User)
+    time_of_creation = models.DateTimeField(auto_now=True)
 
