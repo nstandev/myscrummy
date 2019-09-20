@@ -27,18 +27,16 @@ export class ScrumboardComponent implements OnInit, OnDestroy {
       console.log(value.target.attributes)
       if (value.target.id == "remove"){
         this._dataService.deleteGoal(this.goalToMove["id"], this.goalToMove["goal_id"])
-      } else {
+      } else{
         this._dataService.moveGoal(this.goalToMove["id"], value.target.id)
       }
-
     })
+    this._dataService.setUsers()
   }
 
   ngOnInit() {
-    this._dataService.setUsers();
+    // this._dataService.setUsers();
     this._dataService.getStatusList();
-    // this._subscription.add(this.sub1)
-    // this._subscription.add(this.sub2)
     this.init()
     this._dataService.getProjectsList()
     this.dataService.createUser()

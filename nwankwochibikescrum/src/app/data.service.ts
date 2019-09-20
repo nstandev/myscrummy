@@ -106,7 +106,9 @@ export class DataService implements OnInit{
         this.cookie.set('username', accessDecode['username']);
         this.cookie.set('id', accessDecode['id']);
         this.cookie.set('role', accessDecode['role']);
-        this.cookie.set('login_project', this.user.login_project.name)
+
+        if(this.cookie.check('login_protect'))
+          this.cookie.set('login_project', this.user.login_project.name)
         // this.cookie.set('projects', accessDecode['projects'])
 
         console.log("done setting cookie")
@@ -220,6 +222,7 @@ export class DataService implements OnInit{
             newUser.lastname = user['last_name']
             newUser.username = user['username']
             newUser.goals = user['goals']
+            newUser.role = user['groups'][0]['name']
 
             return newUser;
           });
@@ -440,7 +443,10 @@ export class DataService implements OnInit{
         this.link = "back to goal creation form"
         this.router.navigateByUrl("error");
       },
-      () => console.log('completedx')
+      () => {
+        console.log('completedx')
+        this.setUsers()
+      }
     );
   }
 

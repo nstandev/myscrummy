@@ -313,8 +313,8 @@ class ScrumyGoalsSerializerViewSet(viewsets.ModelViewSet):
 
         form_data = {
             "goal_name": request.data.get('goal_name'),
-            "goal_status": request.data.get('goal_status'),
-            "user": request.data.get('user')
+            # "goal_status": request.data.get('goal_status'),
+            # "user": request.data.get('user')
         }
 
         form = CreateGoalForm(form_data)
@@ -324,10 +324,12 @@ class ScrumyGoalsSerializerViewSet(viewsets.ModelViewSet):
         print(form.errors)
         if form.is_valid():
             goal_name = form.cleaned_data.get('goal_name')
-            username = form.cleaned_data.get('user')
-            goal_status_name = form.cleaned_data.get('goal_status')
-            selected_goal_status = GoalStatus.objects.get(status_name=goal_status_name)
-            user = User.objects.get(username=username)
+            # username = form.cleaned_data.get('user')
+            # goal_status_name = form.cleaned_data.get('goal_status')
+            # username = request.user
+            selected_goal_status = GoalStatus.objects.get(status_name="Weekly Goal")
+            user = request.user
+            # user = User.objects.get(username=username)
 
             # if user.groups.all().first() == "Owner":
             #     return Response(status=401)
@@ -337,8 +339,8 @@ class ScrumyGoalsSerializerViewSet(viewsets.ModelViewSet):
             if user is not None and (allowed_goal_status_dev == selected_goal_status):
                 goal = ScrumyGoals(goal_name=goal_name,
                                    goal_id=goal_id,
-                                   created_by=username,
-                                   owner=username,
+                                   created_by=user.username,
+                                   owner=user.username,
                                    user=user,
                                    goal_status=allowed_goal_status_dev)
 

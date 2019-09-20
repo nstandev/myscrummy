@@ -13,7 +13,7 @@ export class LoginformComponent implements OnInit {
   constructor(private _dataService:DataService, private router: Router) {
     this.dataService = this._dataService
     console.log("login component calls its constructor")
-
+    this._dataService.getAllProjects()
   }
 
   ngOnInit() {

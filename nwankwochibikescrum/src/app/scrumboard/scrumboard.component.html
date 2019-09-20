@@ -31,7 +31,7 @@
                 </ng-container>
               </td>
             </ng-container>
-            <td [dragula]="'goal-item-'+ (user.id)" id="remove">
+            <td id="remove">
               <ng-container *ngFor="let goal of user.goals">
                 <div class="task-div deleted-task" *ngIf="goal.is_deleted == true">
                   <div class="goal-content">

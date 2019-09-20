@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from .models import ScrumyGoals, ScrumyHistory, GoalStatus, ScrumUser, Project
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Group
 
 
 class ScrumyGoalsSerializer(serializers.ModelSerializer):
@@ -30,8 +30,15 @@ class FilteredGoalSerializerForProject(serializers.ModelSerializer):
         fields = '__all__'
 
 
+class GroupSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Group
+        fields = ['id', 'name']
+
+
 class FilteredUserSerializerForProject(serializers.ModelSerializer):
     goals = FilteredGoalSerializerForProject(many=True, read_only=True)
+    groups = GroupSerializer(many=True, read_only=True)
 
     class Meta:
         model = User
@@ -40,6 +47,7 @@ class FilteredUserSerializerForProject(serializers.ModelSerializer):
 
 class UserSerializer(serializers.ModelSerializer):
     goals = ScrumyGoalsSerializer(many=True, read_only=True)
+    groups = GroupSerializer(many=True, read_only=True)
 
     class Meta:
         model = User
