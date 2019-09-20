@@ -1,4 +1,4 @@
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Group
 from django.db import models
 
 # Create your models here.
@@ -50,6 +50,12 @@ class ScrumUser(models.Model):
 class Project(models.Model):
     name = models.CharField(max_length=200)
     created_by = models.CharField(max_length=200)
-    users = models.ManyToManyField(User)
+    users = models.ManyToManyField(User, through="ProjectRoles")
     time_of_creation = models.DateTimeField(auto_now=True)
+
+
+class ProjectRoles(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    project = models.ForeignKey(Project, on_delete=models.CASCADE)
+    role = models.ForeignKey(Group, on_delete=models.CASCADE)
 
