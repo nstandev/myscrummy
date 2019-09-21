@@ -18,8 +18,10 @@ export class LoginformComponent implements OnInit {
 
   ngOnInit() {
     if(this.dataService.checkLoggedInState()){
+      console.log("BUGGGG")
       this.router.navigateByUrl("scrumboard")
     }
+    console.log("BUGGGG OUT")
   }
 
   login(){

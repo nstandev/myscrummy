@@ -22,7 +22,7 @@ from myscrumy import settings
 from nwankwochibikescrumy.form import SignupForm, CreateGoalForm, MoveGoalForm, MoveGoalFormDeveloper, UpdateUserGroup
 from nwankwochibikescrumy.serializers import UserSerializer, ScrumyGoalsSerializer, ScrumyHistorySerializer, \
     GoalStatusSerializer, ScrumUserSerializer, ProjectSerializer, FilteredUserSerializerForProject
-from .models import ScrumyGoals, GoalStatus, ScrumyHistory, ScrumUser, Project
+from .models import ScrumyGoals, GoalStatus, ScrumyHistory, ScrumUser, Project, ProjectRoles
 from django.contrib.auth.models import User, Group
 from .miscellaneous import generate_unique_random_int as get_random_integer
 from . import signals
@@ -294,15 +294,20 @@ class UserSerializerViewSet(viewsets.ModelViewSet):
         project = Project.objects.get(pk=pk)
         users = project.users.all()
 
-        serializer = UserSerializer(users, many=True)
+        # serializer = UserSerializer(users, many=True)
 
         filtered_serializer = FilteredUserSerializerForProject(
             users, context={'project_id': pk}, many=True)
 
         print(filtered_serializer.data)
 
+        # filtered_serializer.data.insert(0, project.created_by)
+
         print("get_users_for_project: ", project.users.all())
-        return Response(filtered_serializer.data)
+        return Response({
+            "users": filtered_serializer.data,
+            "project_owner": project.created_by
+        })
 
 
 class ScrumyGoalsSerializerViewSet(viewsets.ModelViewSet):
@@ -380,8 +385,10 @@ class ScrumyGoalsSerializerViewSet(viewsets.ModelViewSet):
                 new_owner = User.objects.get(pk=request.data.get('user_id'))
                 goal.user = new_owner
                 goal.owner = new_owner.username
+                goal.goal_status_id = request.data.get('status_id')
             except ObjectDoesNotExist:
                 return Response(status=400)
+
         elif mode == "edit_goal_name":
             goal.goal_name = request.data.get('goal_name')
 
@@ -501,13 +508,15 @@ class ScrumUserSerializerViewSet(viewsets.ModelViewSet):
 
                 # handle creating a new project if user is owner
                 if group.name == "Owner":
+                    group = Group.objects.get(name="Owner")
                     print("lets make a  new project")
                     project_name = request.data.get('new_project')
                     print("project-name: ", request.data)
                     new_project = Project(name=project_name, created_by=new_user.username, time_of_creation=datetime.now())
                     new_project.save()
 
-                    new_project.users.add(new_user)
+                    project_roles_entry = ProjectRoles(user=new_user, project=new_project, role=group)
+                    project_roles_entry.save()
 
                 return Response(serializer.data, status=200)
             print("3. exception")
@@ -525,7 +534,7 @@ class ScrumUserSerializerViewSet(viewsets.ModelViewSet):
 
         serializer = ProjectSerializer(projects, many=True)
 
-        print(serializer.data)
+        # print(serializer.data)
         return Response(serializer.data)
 
     @action(methods=['post'], detail=True, url_path='add-user-project', url_name='add_user_project')
@@ -534,8 +543,12 @@ class ScrumUserSerializerViewSet(viewsets.ModelViewSet):
             user = User.objects.get(pk=pk)
             project = Project.objects.filter(name=request.data.get('project_name')).first()
             if project:
-                project.users.add(user)
-                project.save()
+                group = Group.objects.get(name="User")
+                print("add_user_project: ", group.name)
+                # project.users.add(user)
+                # project.save()
+                project_role_entry = ProjectRoles(user=user, project=project, role=group)
+                project_role_entry.save()
         except ObjectDoesNotExist:
             return Response(status=400)
 
@@ -567,6 +580,8 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
 
         print(serializer.data)
 
+        token_obj = Token.objects.get(user=user)
+
         # Add custom claims
         token['id'] = user.id
         token['first_name'] = user.first_name
@@ -574,6 +589,7 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
         token['username'] = user.username
         token['role'] = str(user_group)
         token['projects'] = serializer.data
+        token['token'] = token_obj.key
         # ...
 
         return token

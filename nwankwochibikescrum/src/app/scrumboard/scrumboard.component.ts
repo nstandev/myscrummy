@@ -14,12 +14,16 @@ export class ScrumboardComponent implements OnInit, OnDestroy {
   public dataService: DataService;
   public status = {}
   private goalToMove;
+  private project_id;
   private sub1: Subscription;
   private sub2: Subscription;
   private user_array: User [] = [];
 
   constructor(private _dataService: DataService, private _dragula: DragulaService, private _cookie: CookieService) {
     this.dataService = this._dataService
+    this.project_id = this._cookie.get('project_id')
+
+
     // this.sub1 = this._dragula.drag().subscribe()
     this.sub2 = this._dragula.drop().subscribe(value => {
       console.log(value)

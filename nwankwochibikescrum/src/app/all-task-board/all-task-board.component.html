@@ -1,5 +1,6 @@
 <div style="width:60%; margin-left:25%;">
-    <h4 style="margin-top: 20px !important; color: #05d270 !important;">Project name:{{ this.dataService.user.current_project }}</h4><br>
+    <h4 style="margin-top: 20px !important; color: #05d270 !important;">Project name: {{ this.dataService.user.current_project }}</h4><br>
+    <h5>All Tasks</h5>
     <a class="nav-btns" routerLink="/all-tasks">All tasks</a>
     <a class="nav-btns" routerLink="/scrumboard">My tasks</a>
     <a class="nav-btns" routerLink="/add-goal">create new goal</a>
@@ -19,7 +20,7 @@
         <tr class="container">
             <td>{{ user.username }}</td>
             <ng-container *ngFor="let status of dataService.statusList; let i = index; let c = count;">
-              <td dragula="GOAL" [id]="i+1" [className]="user.role">
+              <td dragula="GOAL" [attr.data-name]="user.id" [id]="i+1" [className]="user.username == dataService.project_owner? 'Owner':user.username">
                 <ng-container  *ngFor="let goal of user.goals; let ii = index; let c = count;">
                   <div class="task-div" *ngIf="goal.goal_status == i+1 && goal.is_deleted == false" (mousedown)="setGoalIDToMove(goal)">
                     <div class="goal-content">
