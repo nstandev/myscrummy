@@ -1,5 +1,7 @@
 <div style="width:60%; margin-left:25%;">
     <h4 style="margin-top: 20px !important; color: #05d270 !important;" *ngIf=" this.dataService.user.current_project != '' ">Project name: {{ this.dataService.user.current_project }}</h4><br>
+    <p class="role" *ngIf="dataService.is_project_owner == true">role: owner</p>
+    <p class="role" *ngIf="dataService.is_project_owner == false">role: user</p>
     <h5>My Tasks</h5>
     <a class="nav-btns" routerLink="/all-tasks" (click)="dataService.enableActive($event)">All tasks</a>
     <a class="nav-btns" routerLink="/scrumboard">My tasks</a>

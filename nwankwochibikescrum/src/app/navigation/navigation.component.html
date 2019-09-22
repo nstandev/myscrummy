@@ -7,9 +7,13 @@
           </div>
           <div style="width: 30%; float:left;"class="navx">
               <a href=""></a>
+
               <a (click)="dataService.logout()" *ngIf="dataService.checkLoggedInState()" style="cursor: pointer;">log out</a>
-              <a *ngIf="dataService.checkLoggedInState()">role: {{ dataService.user.role }}</a>
+
               <a *ngIf="dataService.checkLoggedInState()" style="color: #05d270 !important;">{{ dataService.user.username }}</a>
+
+              <a routerLink="new-project" *ngIf="dataService.checkLoggedInState()" style="color:#f99bb4 !important; background-color: #fffafa;
+              padding:5px 10px; margin-left:5px; margin-right:25px; border-radius: 3px; cursor: pointer">new project</a>
           </div>
       </div>
     </div>

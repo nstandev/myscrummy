@@ -14,10 +14,15 @@ export class AllTaskBoardComponent implements OnInit {
   public sub: Subscription
   private goalToMove;
   public project_id;
+  public project_owner;
+  public is_owner:boolean;
 
   constructor(private _dataService:DataService, private _dragula: DragulaService, private cookie: CookieService) {
     this.dataService = this._dataService
     this.project_id = this.cookie.get('project_id')
+    this.project_owner = this.cookie.get('project_owner')
+
+
 
     this.sub = this._dragula.drop().subscribe(value => {
       console.log(value)

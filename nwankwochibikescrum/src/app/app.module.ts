@@ -14,6 +14,7 @@ import {CookieService} from 'ngx-cookie-service';
 import { DragulaModule } from 'ng2-dragula';
 import { Subscription } from "rxjs";
 import { AppTouchGoalDirective } from './app-touch-goal.directive';
+import {Project} from "./project";
 
 @NgModule({
   declarations: [
@@ -29,7 +30,7 @@ import { AppTouchGoalDirective } from './app-touch-goal.directive';
     FormsModule,
     DragulaModule.forRoot(),
   ],
-  providers: [DataService, User, CookieService,],
+  providers: [DataService, User, CookieService, Project],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

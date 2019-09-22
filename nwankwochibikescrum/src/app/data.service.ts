@@ -5,12 +5,14 @@ import {Router} from "@angular/router";
 import * as jwt_decode from "jwt-decode";
 import {CookieService} from "ngx-cookie-service";
 import {Goal} from "./goal";
+import {Project} from "./project";
 
 @Injectable({
   providedIn: 'root'
 })
 export class DataService implements OnInit{
   public user: User;
+  public new_project: Project;
   public goal: Goal;
   public projects;
   public project_owner;
@@ -26,6 +28,7 @@ export class DataService implements OnInit{
   private http: HttpClient;
   private cookie: CookieService;
   private is_projected_selected:boolean = false;
+  public is_project_owner:boolean = false;
 
   private httpOtions = {
     headers : new HttpHeaders({
@@ -36,8 +39,9 @@ export class DataService implements OnInit{
 
   userTypes = ['Owner', 'user'];
 
-  constructor(private _http: HttpClient, private _user: User, private router: Router, private _cookie: CookieService) {
+  constructor(private _http: HttpClient, private _user: User, private _project:Project, private router: Router, private _cookie: CookieService) {
     this.user = _user;
+    this.new_project = this._project
     this.http = _http;
     this.cookie = this._cookie;
     this.cookie.get('token');
@@ -110,8 +114,8 @@ export class DataService implements OnInit{
         this.cookie.set('role', accessDecode['role']);
         this.cookie.set('token', accessDecode['token'])
 
-        if(this.user.login_project)
-          this.cookie.set('login_project', this.user.login_project)
+        if(this.user.login_project_id)
+          this.cookie.set('project_id', this.user.login_project_id)
 
         console.log("done setting cookie")
         console.log(this.cookie.get('username'))
@@ -126,7 +130,7 @@ export class DataService implements OnInit{
       },
       () => {
         this.isLoggedIn = this.checkLoggedInState();
-        console.log("login_project", this.user.login_project)
+        console.log("login_project_id", this.user.login_project_id)
 
         //After logging in create the user
         this.createUser();
@@ -134,7 +138,7 @@ export class DataService implements OnInit{
         //get projects list for logged in user
         this.getProjectsList()
 
-        if(this.user.login_project) {
+        if(this.user.login_project_id) {
           //get all users for project
           this.setUsers();
           this.router.navigateByUrl("scrumboard");
@@ -149,8 +153,8 @@ export class DataService implements OnInit{
     let is_in_project = false
 
     for(let project of this.user.projects){
-      console.log(project.name, this.user.login_project)
-      if(project.name == this.user.login_project){
+      console.log(project.name, this.user.login_project_id)
+      if(project.name == this.user.login_project_id){
         is_in_project = true
         this.cookie.set("project_name", project.name)
       }
@@ -175,7 +179,7 @@ export class DataService implements OnInit{
       })
     };
 
-    this._http.post(url, {"project_name": this.user.login_project}, httpOptions_).subscribe(
+    this._http.post(url, {"project_id": this.user.login_project_id}, httpOptions_).subscribe(
       data => {
         console.log("data from get all Projects", data)
         this.allProjects = data;
@@ -219,6 +223,7 @@ export class DataService implements OnInit{
     // const url = "/nwankwochibikescrumy/api/users/" + this.cookie.get()
   }
 
+  //gets all users of a project
   setUsers(){
     console.log("token before call: ", this.cookie.get('token'))
     let httpOtions_ = {
@@ -243,10 +248,15 @@ export class DataService implements OnInit{
             newUser.role = user['groups'][0]['name']
             newUser.projects = user['project_set']
 
-            this.project_owner = data["project_owner"]
+
             return newUser;
           });
 
+          this.project_owner = data["project_owner"]
+          this.cookie.set('project_owner', this.project_owner)
+
+          if(this.cookie.get('username') == this.project_owner)
+            this.is_project_owner = true;
           this.allUsers = x;
         },
         error1 => console.log(error1),
@@ -397,7 +407,7 @@ export class DataService implements OnInit{
       error1 => console.log(error1),
       () => {
         console.log("complete projects retrieval")
-        //check if user is in login_project
+        //check if user is in login_project_id
         this.is_project_in_project_list()
       }
 
@@ -431,6 +441,19 @@ export class DataService implements OnInit{
         });
 
         this.project_owner = data["project_owner"]
+        this.cookie.set('project_owner', this.project_owner)
+        //   alert(this.project_owner)
+        // alert(this.cookie.get('username'))
+
+          if(this.cookie.get('username') == this.project_owner){
+            this.is_project_owner = true
+            // alert(this.cookie.get('username') == this.project_owner)
+          } else {
+            this.is_project_owner = false
+          }
+
+
+
         this.allUsers = x;
       },
       error1 => console.log(error1),
@@ -517,6 +540,13 @@ export class DataService implements OnInit{
 
   }
 
+  is_logged_in_user_project_owner(){
+    // alert("username: "+ this.project_owner)
+    if(this.cookie.get('username') == this.project_owner)
+      return true
+    return false
+  }
+
   changeGoalOwner(goal_id, new_owner, status_id){
     const url = "/nwankwochibikescrumy/api/scrumgoals/" + goal_id + "/"
     let httpOptions_ = {
@@ -555,6 +585,34 @@ export class DataService implements OnInit{
       data => console.log(data),
       error1 => console.log(error1),
       () => {
+        this.route("")
+      }
+    )
+  }
+
+  createNewProject(){
+    console.log("create new project")
+    const url = "nwankwochibikescrumy/api/scrumprojects/"
+    let httpOptions_ = {
+      headers : new HttpHeaders({
+        'Content-Type': 'Application/json',
+        'Authorization': 'Token  ' + this.cookie.get('token')
+      })
+    };
+
+    this._http.post(url,
+      {
+        'name':this.new_project.name,
+        "user_id": this.cookie.get('id')
+      },
+      httpOptions_)
+      .subscribe(
+      data => {
+        console.log("new project", data)
+      },
+      error1 => console.log(error1),
+      () => {
+        console.log("project create completed")
         this.route("")
       }
     )

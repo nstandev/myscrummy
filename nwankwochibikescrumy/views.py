@@ -541,7 +541,7 @@ class ScrumUserSerializerViewSet(viewsets.ModelViewSet):
     def add_user_project(self, request, pk=None):
         try:
             user = User.objects.get(pk=pk)
-            project = Project.objects.filter(name=request.data.get('project_name')).first()
+            project = Project.objects.filter(id=request.data.get('project_id')).first()
             if project:
                 group = Group.objects.get(name="User")
                 print("add_user_project: ", group.name)
@@ -563,6 +563,33 @@ class ProjectSerializerViewSet(viewsets.ModelViewSet):
     serializer_class = ProjectSerializer
     authentication_classes = ()
     permission_classes = []
+
+
+class ProjectSerializerAuthViewSet(viewsets.ModelViewSet):
+    queryset = Project.objects.all()
+    serializer_class = ProjectSerializer
+
+    def create(self, request, *args, **kwargs):
+
+        try:
+            group = Group.objects.get(name="Owner")
+            owner = User.objects.get(pk=request.data.get('user_id'))
+        except ObjectDoesNotExist:
+            return Response(status=401)
+
+        print("lets make a  new project")
+        project_name = request.data.get('name')
+
+        print("project-name: ", request.data)
+
+        new_project = Project(name=project_name, created_by=owner.username, time_of_creation=datetime.now())
+        new_project.save()
+
+        project_roles_entry = ProjectRoles(user=owner, project=new_project, role=group)
+        project_roles_entry.save()
+
+        return Response("done")
+
 
 class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
     @classmethod

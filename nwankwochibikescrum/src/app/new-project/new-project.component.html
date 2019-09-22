@@ -1,0 +1,14 @@
+<h2>Create a new Project</h2>
+
+<div>
+    <div class="form-div">
+        <form action="" method="post" (ngSubmit)="dataService.createNewProject()">
+          <p>Project name: <br>
+            <textarea type="text" name="name" [(ngModel)]=dataService.new_project.name></textarea>
+          </p>
+
+          <button class="btn" type="submit">submit</button>
+        </form>
+        <p style="text-align: center;"><a style="size:10px! important; color:#5a5a63 !important; text-decoration:underline" routerLink="all-tasks">back to home</a></p>
+    </div>
+</div>

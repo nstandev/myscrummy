@@ -41,9 +41,13 @@ export class ScrumboardComponent implements OnInit, OnDestroy {
   ngOnInit() {
     // this._dataService.setUsers();
     this._dataService.getStatusList();
-    this.init()
     this._dataService.getProjectsList()
     this.dataService.createUser()
+
+    this._dataService.setUsers();
+    this._dataService.getStatusList();
+
+    this.init()
   }
 
   init(){

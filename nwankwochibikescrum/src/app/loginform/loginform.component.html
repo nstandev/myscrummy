@@ -12,8 +12,8 @@
             <input [(ngModel)]=dataService.user.password type="password" name="password"><br>
 
             project: <br>
-            <select name="project" [value]="dataService.user.login_project" [(ngModel)]=dataService.user.login_project>
-              <option *ngFor="let project of dataService.allProjects" [value]="project.name">{{ project.name }}</option>
+            <select name="project" [value]="dataService.user.login_project_id" [(ngModel)]="dataService.user.login_project_id">
+              <option *ngFor="let project of dataService.allProjects" [value]="project.id">{{ project.name }}</option>
             </select>
 
 

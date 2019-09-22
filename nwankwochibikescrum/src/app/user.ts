@@ -15,7 +15,7 @@ export class User {
   public new_project: string;
   public projects: any;
   public current_project: any;
-  public login_project;
+  public login_project_id;
 
   constructor(){}
 }

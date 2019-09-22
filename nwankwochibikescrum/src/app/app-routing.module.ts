@@ -11,6 +11,7 @@ import {SuccessComponent} from "./success/success.component";
 import {ChangeOwnerFormComponent} from "./change-owner-form/change-owner-form.component";
 import {AllTaskBoardComponent} from "./all-task-board/all-task-board.component";
 import {BlankProjectComponent} from "./blank-project-component/blank-project.component";
+import {NewProjectComponent} from "./new-project/new-project.component";
 
 
 const routes: Routes = [
@@ -24,7 +25,8 @@ const routes: Routes = [
   {path:'change-owner/:goal_id', component:ChangeOwnerFormComponent},
   {path:'error', component:ErrorComponent},
   {path:'success', component:SuccessComponent},
-  {path:'blank', component:BlankProjectComponent}
+  {path:'blank', component:BlankProjectComponent},
+  {path:'new-project', component:NewProjectComponent},
 ];
 
 @NgModule({
@@ -43,5 +45,6 @@ export const routingComponents = [
   ErrorComponent,
   SuccessComponent,
   AllTaskBoardComponent,
-  BlankProjectComponent
+  BlankProjectComponent,
+  NewProjectComponent
 ]
