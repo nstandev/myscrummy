@@ -11,7 +11,7 @@ from rest_framework_simplejwt.views import (
 )
 
 from nwankwochibikescrumy import views
-from nwankwochibikescrumy.views import MyTokenObtainPairView
+from nwankwochibikescrumy.views import MyTokenObtainPairView, CustomTokenAuthentication
 
 app_name = 'nwankwochibikescrumy'
 
@@ -42,8 +42,11 @@ urlpatterns = [
     path('api/', include(router.urls)),
 
     # jwt paths
-    url(r'^api-token-auth/$', MyTokenObtainPairView.as_view(), name='token_obtain_pair'),
-    url(r'^api-token-auth/refresh/$', TokenRefreshView.as_view(), name='token_refresh'),
+    # url(r'^api-token-auth/$', MyTokenObtainPairView.as_view(), name='token_obtain_pair'),
+    # url(r'^api-token-auth/refresh/$', TokenRefreshView.as_view(), name='token_refresh'),
+
+    # custom Token Auth
+    url(r'^api-token-auth/$', CustomTokenAuthentication.as_view(), name="api-token-auth")
 ]
 
 # print(include(router.urls))

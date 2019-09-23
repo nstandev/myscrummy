@@ -10,6 +10,7 @@ from django.http import HttpResponse, Http404, JsonResponse
 from rest_framework import permissions
 from rest_framework.authentication import SessionAuthentication, BasicAuthentication, TokenAuthentication
 from rest_framework.authtoken.models import Token
+from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.decorators import api_view, permission_classes, action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -309,6 +310,27 @@ class UserSerializerViewSet(viewsets.ModelViewSet):
             "project_owner": project.created_by
         })
 
+    # get the user linked to a particular project
+    @action(methods=['get'], detail=True, url_path="user-goals", url_name="user_goals")
+    def get_user_for_project(self, request, pk=None):
+        project = Project.objects.get(pk=pk)
+        user = project.users.filter(username=request.query_params.get('user_id')).first()
+        print("USER", request.query_params.get('user_id'))
+        # serializer = UserSerializer(users, many=True)
+
+        filtered_serializer = FilteredUserSerializerForProject(
+            user, context={'project_id': pk}, many=False)
+
+        print(filtered_serializer.data)
+
+        # filtered_serializer.data.insert(0, project.created_by)
+
+        print("get_users_for_project: ", project.users.all())
+        return Response({
+            "user": filtered_serializer.data,
+            "project_owner": project.created_by
+        })
+
 
 class ScrumyGoalsSerializerViewSet(viewsets.ModelViewSet):
     queryset = ScrumyGoals.objects.all().filter(is_deleted=False)
@@ -478,6 +500,7 @@ class ScrumUserSerializerViewSet(viewsets.ModelViewSet):
         form = SignupForm(form_data)
 
         if form.is_valid():
+            print("valid form data")
             email = form.cleaned_data.get('email')
             first_name = form.cleaned_data.get('first_name')
             last_name = form.cleaned_data.get('last_name')
@@ -521,6 +544,7 @@ class ScrumUserSerializerViewSet(viewsets.ModelViewSet):
                 return Response(serializer.data, status=200)
             print("3. exception")
             return Response(status=400)
+        print(form.errors)
         print("4. exception")
         return Response(status=400)
 
@@ -624,3 +648,44 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
 
 class MyTokenObtainPairView(TokenObtainPairView):
     serializer_class = MyTokenObtainPairSerializer
+
+
+class CustomTokenAuthentication(ObtainAuthToken):
+    def post(self, request, *args, **kwargs):
+        serializer = self.serializer_class(data=request.data.get('user'),
+                                           context={'request': request})
+        serializer.is_valid(raise_exception=True)
+        user = serializer.validated_data['user']
+        token, created = Token.objects.get_or_create(user=user)
+        user_group = user.groups.all().first()
+
+        response = {
+            'token': token.key,
+            'id': user.pk,
+            'email': user.email,
+            'first_name': user.first_name,
+            'last_name': user.last_name,
+            'username': user.username,
+            'role': str(user_group),
+        }
+
+        if request.data.get('project_id'):
+
+            try:
+                project = Project.objects.get(pk=request.data.get('project_id'))
+
+                if not user.project_set.filter(pk=project.id).exists():
+                    group = Group.objects.get(name="User")
+                    print("add_user_project: ", group.name)
+                    # project.users.add(user)
+                    # project.save()
+                    project_role_entry = ProjectRoles(user=user, project=project, role=group)
+                    project_role_entry.save()
+
+                    response['project'] = project.id
+                    response['project_creator'] = project.created_by
+            except ObjectDoesNotExist:
+                print("no login")
+                return Response(status=400)
+
+        return Response(response)

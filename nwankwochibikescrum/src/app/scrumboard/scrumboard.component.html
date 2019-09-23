@@ -3,13 +3,13 @@
     <p class="role" *ngIf="dataService.is_project_owner == true">role: owner</p>
     <p class="role" *ngIf="dataService.is_project_owner == false">role: user</p>
     <h5>My Tasks</h5>
-    <a class="nav-btns" routerLink="/all-tasks" (click)="dataService.enableActive($event)">All tasks</a>
+    <a class="nav-btns" routerLink="/all-tasks">All tasks</a>
     <a class="nav-btns" routerLink="/scrumboard">My tasks</a>
     <a class="nav-btns" routerLink="/add-goal">create new goal</a>
 </div>
 <div>
   <table (click)="onTableClick($event)">
-    <div *ngIf="user_array != null">
+    <div *ngIf="dataService.user_array != null">
       <thead>
           <th id="author">User</th>
           <ng-container *ngFor="let status of dataService.statusList; let i = index; let c = count;">
@@ -18,15 +18,15 @@
       <th id="remove">remove</th>
       </thead>
 
-      <ng-container *ngFor="let user of user_array" class="wrapper">
+
         <tr class="container">
-            <td>{{ user.username }}</td>
+            <td>{{ dataService.user_for_selected_project.username }}</td>
             <ng-container *ngFor="let status of dataService.statusList; let i = index; let c = count;">
-              <td [dragula]="i+1==4 ? 'four':'goal-item-'+ (user.id)" [id]="i+1" [className]="user.username == dataService.project_owner? 'Owner':'User'">
-                <ng-container  *ngFor="let goal of user.goals; let ii = index; let c = count;">
+              <td dragula="GOAL" [id]="i+1" [className]="dataService.user_for_selected_project.username == dataService.project_owner? 'Owner':'User'">
+                <ng-container  *ngFor="let goal of dataService.user_for_selected_project.goals; let ii = index; let c = count;">
                   <div class="task-div" *ngIf="goal.goal_status == i+1 && goal.is_deleted == false" (mousedown)="setGoalIDToMove(goal)">
                     <div class="goal-content">
-                      <b>{{ goal.goal_id }}.</b> <span class="goal-text">{{ goal.goal_name }}</span> <br>
+                      <b>{{ goal.goal_id }}. </b> <span class="goal-text">{{ goal.goal_name }}</span> <br>
                       <!--<a class="move-links" routerLink="/change-owner/{{goal.id}}">change owner</a>-->
                     </div>
                   </div>
@@ -34,7 +34,7 @@
               </td>
             </ng-container>
             <td id="remove">
-              <ng-container *ngFor="let goal of user.goals">
+              <ng-container *ngFor="let goal of dataService.user_for_selected_project.goals">
                 <div class="task-div deleted-task" *ngIf="goal.is_deleted == true">
                   <div class="goal-content">
                       <b>{{ goal.goal_id }}.</b> {{ goal.goal_name }} <br>
@@ -45,7 +45,7 @@
               </ng-container>
             </td>
         </tr>
-      </ng-container>
+
     </div>
   </table>
   <p id="experiment"></p>

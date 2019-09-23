@@ -12,6 +12,8 @@ import {Project} from "./project";
 })
 export class DataService implements OnInit{
   public user: User;
+  public user_for_selected_project:User;
+  public user_array: any;
   public new_project: Project;
   public goal: Goal;
   public projects;
@@ -37,7 +39,7 @@ export class DataService implements OnInit{
     })
   }
 
-  userTypes = ['Owner', 'user'];
+  userTypes = ['Owner', 'User'];
 
   constructor(private _http: HttpClient, private _user: User, private _project:Project, private router: Router, private _cookie: CookieService) {
     this.user = _user;
@@ -48,6 +50,7 @@ export class DataService implements OnInit{
     this.getAllProjects();
 
     // this.checkLoggedInState();
+    this.user_for_selected_project = new User()
   }
 
   ngOnInit(){
@@ -93,32 +96,46 @@ export class DataService implements OnInit{
         'Content-Type': 'Application/json',
       })
     }
-    this.http.post(url2, {username: this.user.username, password: this.user.password}, httpOtions_).subscribe(
+
+    let body = {
+      user:{
+        username: this.user.username,
+        password: this.user.password,
+      },
+
+      project_id: this.user.login_project_id
+    }
+
+    this.http.post(url2, body, httpOtions_).subscribe(
       data => {
         console.log("******^^^^^^^")
         console.log(data);
 
-        let access_token = data['access'];
-        let refresh_token = data['refresh'];
+        // let access_token = data['access'];
+        // let refresh_token = data['refresh'];
 
-        let accessDecode = jwt_decode(access_token)
+        // let data = jwt_decode(access_token)
         // this.projects = accessDecode['projects']
 
 
-        this.cookie.set('access_token', access_token);
-        this.cookie.set('refresh_token', refresh_token);
-        this.cookie.set('first_name', accessDecode['first_name']);
-        this.cookie.set('last_name', accessDecode['last_name']);
-        this.cookie.set('username', accessDecode['username']);
-        this.cookie.set('id', accessDecode['id']);
-        this.cookie.set('role', accessDecode['role']);
-        this.cookie.set('token', accessDecode['token'])
+        // this.cookie.set('access_token', access_token);
+        // this.cookie.set('refresh_token', refresh_token);
+
+        this.cookie.set('first_name', data['first_name']);
+        this.cookie.set('last_name', data['last_name']);
+        this.cookie.set('username', data['username']);
+        this.cookie.set('id', data['id']);
+        this.cookie.set('role', data['role']);
+        this.cookie.set('token', data['token'])
 
         if(this.user.login_project_id)
           this.cookie.set('project_id', this.user.login_project_id)
 
         console.log("done setting cookie")
         console.log(this.cookie.get('username'))
+
+        this.getProjectsList()
+        // location.reload()
         // console.log(typeof accessDecode['projects'], accessDecode['projects'][0])
         },
       error1 => {
@@ -220,7 +237,44 @@ export class DataService implements OnInit{
   }
 
   getUser(){
-    // const url = "/nwankwochibikescrumy/api/users/" + this.cookie.get()
+    console.log("get user goals MMMM")
+    const url = "nwankwochibikescrumy/api/users/" + this.cookie.get('project_id') + "/user-goals/?user_id=" + this.cookie.get('username');
+    let httpOptions_ = {
+      headers : new HttpHeaders({
+        'Content-Type': 'Application/json',
+        'Authorization': 'Token ' + this.cookie.get('token')
+      })
+    };
+
+    this._http.get(url, httpOptions_).subscribe(
+      (data) => {
+        let user = data["user"]
+          let newUser = new User();
+
+          newUser.id = user['id']
+          newUser.firstname = user['first_name']
+          newUser.lastname = user['last_name']
+          newUser.username = user['username']
+          newUser.goals = user['goals']
+          newUser.projects = user['project_set']
+
+          this.user_for_selected_project = newUser
+          this.user_array = [newUser]
+          // this.user_array.push(newUser)
+
+      },
+      error1 => console.log(error1),
+      () => {
+        console.log("complete projects retrieval for get user goals MMM: ", this.user_array)
+
+        // this.cookie.set("project_id", project_id)
+        // this.cookie.set("project_name", project_name)
+        // this.user.current_project = project_name;
+        // this.is_projected_selected = true
+        // this.getProjectsList()
+        // this.route("all-tasks")
+      }
+    )
   }
 
   //gets all users of a project
@@ -408,7 +462,7 @@ export class DataService implements OnInit{
       () => {
         console.log("complete projects retrieval")
         //check if user is in login_project_id
-        this.is_project_in_project_list()
+        // this.is_project_in_project_list()
       }
 
     )
@@ -531,7 +585,10 @@ export class DataService implements OnInit{
     };
 
     this._http.patch(url, {"goal_status":move_id}, httpOptions_, ).subscribe(
-      data => console.log(data),
+      data =>{
+        console.log(data)
+        this.getProjectsList()
+      },
       error1 => console.log(error1),
       () => {
         // this.route("scrumboard")
@@ -566,7 +623,7 @@ export class DataService implements OnInit{
       },
       () => {
         console.log("completed")
-        this.route("")
+        // this.route("")
       }
     )
   }
@@ -609,6 +666,7 @@ export class DataService implements OnInit{
       .subscribe(
       data => {
         console.log("new project", data)
+        this.getProjectsList()
       },
       error1 => console.log(error1),
       () => {
