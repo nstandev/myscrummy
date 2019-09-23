@@ -534,7 +534,7 @@ export class DataService implements OnInit{
       data => console.log(data),
       error1 => console.log(error1),
       () => {
-        this.route("scrumboard")
+        // this.route("scrumboard")
       }
     )
 

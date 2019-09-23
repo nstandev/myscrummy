@@ -70,16 +70,13 @@ export class AllTaskBoardComponent implements OnInit {
 
         if (_dataService.project_owner != this.cookie.get('username') && target.id == "4") {
           return false
-        }else{
+        }
+
+        if (_dataService.project_owner != this.cookie.get('username') && target.className == this.cookie.get('username')) {
           return true
         }
 
-
-
-
-        if (_dataService.project_owner != this.cookie.get('username') && target.id == "4")
-          alert(target.id)
-          return false
+        return false
       }
     })
   }

@@ -27,8 +27,7 @@
                   <div class="task-div" *ngIf="goal.goal_status == i+1 && goal.is_deleted == false" (mousedown)="setGoalIDToMove(goal)">
                     <div class="goal-content">
                       <b>{{ goal.goal_id }}.</b> <span class="goal-text">{{ goal.goal_name }}</span> <br>
-                      <a class="move-links" routerLink="/change-owner/{{goal.id}}">change owner</a>
-                      <br><br><br>
+                      <!--<a class="move-links" routerLink="/change-owner/{{goal.id}}">change owner</a>-->
                     </div>
                   </div>
                 </ng-container>
