@@ -158,7 +158,7 @@ export class DataService implements OnInit{
         if(this.user.login_project_id) {
           //get all users for project
           this.setUsers();
-          this.router.navigateByUrl("scrumboard");
+          this.router.navigateByUrl("blank");
         } else {
           this.route("/blank")
         }
@@ -286,7 +286,8 @@ export class DataService implements OnInit{
         'Authorization': 'Token ' + this.cookie.get('token')
       })
     }
-    if(this.cookie.check('project_name')){
+    // this.cookie.check('project_name')
+    if(true){
         // alert("wow")
         const url = "/nwankwochibikescrumy/api/users/" + this.cookie.get('project_id') + "/projects-users/";
         this.http.get(url, httpOtions_).subscribe(
@@ -303,11 +304,16 @@ export class DataService implements OnInit{
             newUser.projects = user['project_set']
 
 
+
             return newUser;
           });
 
+          alert("auth_user"+ data["auth_user"])
           this.project_owner = data["project_owner"]
           this.cookie.set('project_owner', this.project_owner)
+          this.cookie.set("user_project_role", data["user_role_id"])
+          this.cookie.set("user_role_name", data["user_role_name"])
+          this.cookie.set("auth_user", data["auth_user"])
 
           if(this.cookie.get('username') == this.project_owner)
             this.is_project_owner = true;
@@ -320,6 +326,7 @@ export class DataService implements OnInit{
         }
       )
     }else{
+      // alert("I am not supposed to be here")
       console.log("going to blank from setUsers")
       this.route('blank')
     }
@@ -496,15 +503,16 @@ export class DataService implements OnInit{
 
         this.project_owner = data["project_owner"]
         this.cookie.set('project_owner', this.project_owner)
-        //   alert(this.project_owner)
-        // alert(this.cookie.get('username'))
+        this.cookie.set("user_project_role", data["user_role_id"])
+        this.cookie.set("user_role_name", data["user_role_name"])
+        this.cookie.set("auth_user", data["auth_user"])
 
-          if(this.cookie.get('username') == this.project_owner){
-            this.is_project_owner = true
-            // alert(this.cookie.get('username') == this.project_owner)
-          } else {
-            this.is_project_owner = false
-          }
+        if(this.cookie.get('username') == this.project_owner){
+          this.is_project_owner = true
+          // alert(this.cookie.get('username') == this.project_owner)
+        } else {
+          this.is_project_owner = false
+        }
 
 
 

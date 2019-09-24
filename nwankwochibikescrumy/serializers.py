@@ -86,16 +86,31 @@ class ProjectSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+class FilteredRoleListSerializer(serializers.ListSerializer):
+    def to_representation(self, data):
+        data = data.filter(project_id=self.context['project_id']).first()
+        print("FilteredRoleListSerializer: ", data)
+        return super(FilteredRoleListSerializer, self).to_representation(data)
+
+
+class FilteredRoleForProject(serializers.ModelSerializer):
+    class Meta:
+        model = ProjectRoles
+        list_serializer_class = FilteredRoleListSerializer
+        fields = '__all__'
+
+
 class FilteredUserSerializerForProject(serializers.ModelSerializer):
     goals = FilteredGoalSerializerForProject(many=True, read_only=True)
     groups = GroupSerializer(many=True, read_only=True)
     # project_set = FilteredProjectForUserSerializer
     project_set = ProjectSerializer(many=True, read_only=True)
+    # role = FilteredRoleForProject(many=False, read_only=True)
+    role = ProjectRolesSerializer(many=True, read_only=True)
 
     class Meta:
         model = User
-        fields = ['id', 'first_name', 'last_name', 'username', 'email', 'groups', 'goals', 'project_set']
-
+        fields = ['id', 'first_name', 'last_name', 'username', 'email', 'groups', 'goals', 'project_set', 'role']
 
 
 class ScrumyHistorySerializer(serializers.ModelSerializer):
@@ -116,5 +131,8 @@ class ScrumUserSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
-
+class ProjectRolesSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProjectRoles
+        fields = '__all__'
 

@@ -55,7 +55,7 @@ class Project(models.Model):
 
 
 class ProjectRoles(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, related_name="role", on_delete=models.CASCADE)
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
     role = models.ForeignKey(Group, on_delete=models.CASCADE)
 

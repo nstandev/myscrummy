@@ -304,10 +304,18 @@ class UserSerializerViewSet(viewsets.ModelViewSet):
 
         # filtered_serializer.data.insert(0, project.created_by)
 
+        try:
+            user_project_role_entry = ProjectRoles.objects.filter(project=project, user=request.user).get()
+        except ObjectDoesNotExist:
+            return Response({"message": "No row matches this data", "user": request.user.username}, status=404)
+
         print("get_users_for_project: ", project.users.all())
         return Response({
             "users": filtered_serializer.data,
-            "project_owner": project.created_by
+            "project_owner": project.created_by,
+            "user_role_id": user_project_role_entry.role_id,
+            "user_role_name": Group.objects.get(pk=user_project_role_entry.role_id).name,
+            "auth_user": request.user.username
         })
 
     # get the user linked to a particular project
@@ -321,6 +329,11 @@ class UserSerializerViewSet(viewsets.ModelViewSet):
         filtered_serializer = FilteredUserSerializerForProject(
             user, context={'project_id': pk}, many=False)
 
+        try:
+            user_project_role_entry = ProjectRoles.objects.filter(project=project, user=user).get()
+        except ObjectDoesNotExist:
+            return Response("No row matches this data", status=404)
+
         print(filtered_serializer.data)
 
         # filtered_serializer.data.insert(0, project.created_by)
@@ -328,7 +341,10 @@ class UserSerializerViewSet(viewsets.ModelViewSet):
         print("get_users_for_project: ", project.users.all())
         return Response({
             "user": filtered_serializer.data,
-            "project_owner": project.created_by
+            "project_owner": project.created_by,
+            "user_role_id": user_project_role_entry.role_id,
+            "user_role_name": Group.objects.get(pk=user_project_role_entry.role_id).name,
+            "auth_user": request.user.username
         })
 
 
