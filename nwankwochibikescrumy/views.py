@@ -22,7 +22,8 @@ from rest_framework_simplejwt.views import TokenObtainPairView
 from myscrumy import settings
 from nwankwochibikescrumy.form import SignupForm, CreateGoalForm, MoveGoalForm, MoveGoalFormDeveloper, UpdateUserGroup
 from nwankwochibikescrumy.serializers import UserSerializer, ScrumyGoalsSerializer, ScrumyHistorySerializer, \
-    GoalStatusSerializer, ScrumUserSerializer, ProjectSerializer, FilteredUserSerializerForProject
+    GoalStatusSerializer, ScrumUserSerializer, ProjectSerializer, FilteredUserSerializerForProject, GroupSerializer, \
+    ProjectRolesSerializer
 from .models import ScrumyGoals, GoalStatus, ScrumyHistory, ScrumUser, Project, ProjectRoles
 from django.contrib.auth.models import User, Group
 from .miscellaneous import generate_unique_random_int as get_random_integer
@@ -629,6 +630,29 @@ class ProjectSerializerAuthViewSet(viewsets.ModelViewSet):
         project_roles_entry.save()
 
         return Response("done")
+
+
+class GroupSerializerViewSet(viewsets.ModelViewSet):
+    queryset = Group.objects.all()
+    serializer_class = GroupSerializer
+
+
+class ProjectRolesSerializerViewSet(viewsets.ModelViewSet):
+    queryset = ProjectRoles.objects.all()
+    serializer_class = ProjectRolesSerializer
+
+    def create(self, request, *args, **kwargs):
+        print("change user role")
+        print(request.data.get('user_id'), request.data.get('group_id'))
+
+        user_id = request.data.get('user_id')
+        group_id = request.data.get('group_id')
+        project_id = request.data.get('project_id')
+
+        project_role = ProjectRoles.objects.filter(user_id=user_id, project_id=project_id).first()
+        project_role.role_id = group_id
+        project_role.save()
+        return Response(project_role.role_id)
 
 
 class MyTokenObtainPairSerializer(TokenObtainPairSerializer):

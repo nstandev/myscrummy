@@ -1,11 +1,11 @@
 <div style="width:60%; margin-left:25%;">
     <h4 style="margin-top: 20px !important; color: #05d270 !important;">Project name: {{ this.dataService.user.current_project }}</h4><br>
-    <p class="role" *ngIf="dataService.is_project_owner == true">role: owner</p>
-    <p class="role" *ngIf="dataService.is_project_owner == false">role: user</p>
+    <p class="role">role: {{ this.dataService.user_role }}</p>
     <h5>All Tasks</h5>
     <a class="nav-btns" routerLink="/all-tasks">All tasks</a>
     <a class="nav-btns" routerLink="/scrumboard">My tasks</a>
     <a class="nav-btns" routerLink="/add-goal">create new goal</a>
+    <a *ngIf="this.dataService.user_role_id < 2" class="nav-btns" routerLink="/change-role">change role</a>
 </div>
 <div>
   <table (click)="onTableClick($event)">

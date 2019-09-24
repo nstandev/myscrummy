@@ -1,0 +1,15 @@
+<h2>Change user's role</h2>
+<div>
+    <div class="form-div">
+        <form action="" method="post" #changeRoleForm="ngForm" (ngSubmit)="changeUserRole()">
+          <select name="username" id="" [(ngModel)]="user_id">
+            <option *ngFor="let user of dataService.allUsers" [value]="user.id">{{ user.username }}</option>
+          </select>
+          <select name="username" id="" [(ngModel)]="group_id">
+            <option *ngFor="let group of dataService.groups" [value]="group.id">{{ group.name }}</option>
+          </select>
+          <button class="btn" type="submit">submit</button>
+        </form>
+        <p style="width: 45%;margin-left: 35%;" ><a style="size:10px! important; color:#5a5a63 !important; text-decoration:underline" routerLink="/all-tasks">back to home</a></p>
+    </div>
+</div>

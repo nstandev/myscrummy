@@ -16,6 +16,8 @@ export class AllTaskBoardComponent implements OnInit {
   public project_id;
   public project_owner;
   public is_owner:boolean;
+  public user_role
+  private user_role_id;
 
   constructor(private _dataService:DataService, private _dragula: DragulaService, private cookie: CookieService) {
     this.dataService = this._dataService
@@ -50,35 +52,67 @@ export class AllTaskBoardComponent implements OnInit {
         console.log(source.className)
         console.log(el)
 
-        // returns true if you're the project owner
-        if (_dataService.project_owner == this.cookie.get('username'))
-          return true
+        let role = this.dataService.user_role_id
+        console.log("ROLE IN MOVES: ", role)
 
-        // returns true if source contains your goal
-        if(this.cookie.get('username') == source.className)
+        if(role == 1 || role == 4){//Owner or admin
           return true
+        }else if(role == 2){//User
+          if(this.cookie.get('username') == source.className)
+            return true
+        }else{//QA
+          return true
+        }
+
+        // returns true if you're the project owner
+        // if (_dataService.project_owner == this.cookie.get('username'))
+        //   return true
+        //
+        // // returns true if source contains your goal
+        // if(this.cookie.get('username') == source.className)
+        //   return true
       },
       accepts: (el, target, source) => {
         // alert(typeof target.id)
         //returns true if
         // if(source.className == "Owner")
         //   return true
-        console.log(this._dataService.project_owner)
-        if (_dataService.project_owner == this.cookie.get('username'))
+
+        let role = this.dataService.user_role_id
+        console.log("ROLE: ", role)
+
+        if(role == 1 || role == 4){//Owner or admin
           return true
-
-
-        if (_dataService.project_owner != this.cookie.get('username') && target.id == "4") {
-          return false
+        }else if(role == 2){//User
+          if (target.getAttribute("data-name") == source.getAttribute("data-name") && target.id != "4") {
+            return true
+          }
+        }else{//QA
+          if (target.getAttribute("data-name") == source.getAttribute("data-name") && target.id == "4") {
+            return true
+          }
         }
 
-        if (_dataService.project_owner != this.cookie.get('username') && target.className == this.cookie.get('username')) {
-          return true
-        }
+        // console.log(this._dataService.project_owner)
+        // if (_dataService.project_owner == this.cookie.get('username'))
+        //   return true
+        //
+        //
+        // if (_dataService.project_owner != this.cookie.get('username') && target.id == "4") {
+        //   return false
+        // }
+        //
+        // if (_dataService.project_owner != this.cookie.get('username') && target.className == this.cookie.get('username')) {
+        //   return true
+        // }
 
         return false
       }
     })
+
+    console.log("COOKIE COOKIE:")
+    this.user_role = this.cookie.get("user_project_role_name")
+    this.user_role_id = this.cookie.get("user_project_role_id")
   }
 
   ngOnInit() {
@@ -86,6 +120,8 @@ export class AllTaskBoardComponent implements OnInit {
     this._dataService.setUsers();
     this._dataService.getStatusList();
     this._dataService.getProjectsList()
+
+
   }
 
   setGoalIDToMove(goal){

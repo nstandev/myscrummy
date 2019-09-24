@@ -31,6 +31,9 @@ export class DataService implements OnInit{
   private cookie: CookieService;
   private is_projected_selected:boolean = false;
   public is_project_owner:boolean = false;
+  public user_role;
+  private groups;
+  public user_role_id;
 
   private httpOtions = {
     headers : new HttpHeaders({
@@ -40,6 +43,8 @@ export class DataService implements OnInit{
   }
 
   userTypes = ['Owner', 'User'];
+
+
 
   constructor(private _http: HttpClient, private _user: User, private _project:Project, private router: Router, private _cookie: CookieService) {
     this.user = _user;
@@ -308,21 +313,25 @@ export class DataService implements OnInit{
             return newUser;
           });
 
-          alert("auth_user"+ data["auth_user"])
+          // alert("auth_user"+ data["auth_user"])
           this.project_owner = data["project_owner"]
           this.cookie.set('project_owner', this.project_owner)
-          this.cookie.set("user_project_role", data["user_role_id"])
-          this.cookie.set("user_role_name", data["user_role_name"])
+          this.cookie.set("user_project_role_id", data["user_role_id"])
+          this.cookie.set("user_project_role_name", data["user_role_name"])
           this.cookie.set("auth_user", data["auth_user"])
 
           if(this.cookie.get('username') == this.project_owner)
             this.is_project_owner = true;
+
           this.allUsers = x;
         },
         error1 => console.log(error1),
         () => {
           console.log("complete")
           console.log(this.allUsers)
+
+          this.user_role = this.cookie.get("user_project_role_name")
+          this.user_role_id = this.cookie.get("user_project_role_id")
         }
       )
     }else{
@@ -503,9 +512,11 @@ export class DataService implements OnInit{
 
         this.project_owner = data["project_owner"]
         this.cookie.set('project_owner', this.project_owner)
-        this.cookie.set("user_project_role", data["user_role_id"])
-        this.cookie.set("user_role_name", data["user_role_name"])
+        this.cookie.set("user_project_role_id", data["user_role_id"])
+        this.cookie.set("user_project_role_name", data["user_role_name"])
         this.cookie.set("auth_user", data["auth_user"])
+
+        this.user_role = data["user_role_name"]
 
         if(this.cookie.get('username') == this.project_owner){
           this.is_project_owner = true
@@ -513,8 +524,6 @@ export class DataService implements OnInit{
         } else {
           this.is_project_owner = false
         }
-
-
 
         this.allUsers = x;
       },
@@ -527,9 +536,33 @@ export class DataService implements OnInit{
         this.user.current_project = project_name;
         this.is_projected_selected = true
         this.getProjectsList()
+
+        this.user_role = this.cookie.get("user_project_role_name")
+        this.user_role_id = this.cookie.get("user_project_role_id")
+
         this.route("all-tasks")
       }
     )
+  }
+
+  getRoles(){
+    const url = "/nwankwochibikescrumy/api/groups/"
+    let httpOptions_ = {
+      headers : new HttpHeaders({
+        'Content-Type': 'Application/json',
+        'Authorization': 'Token ' + this.cookie.get('token')
+      })
+    };
+    this.http.get(url, httpOptions_).subscribe(
+      data => {
+        console.log(data)
+        this.groups = data;
+      },
+      error1 => console.log(error1.statusText),
+      () => {
+        // this.route("scrumboard")
+      }
+    );
   }
 
   createNewGoal(){
@@ -688,26 +721,29 @@ export class DataService implements OnInit{
     this.router.navigateByUrl(routeName)
   }
 
-  enableActive(event){
-    let navBtn = document.getElementsByClassName("nav-btns")
-    // for(item of navBtn){
-    //
-    // }
+  changeUserRole(user_id: any, group_id: any) {
+    const url = "/nwankwochibikescrumy/api/project-roles/"
+    let httpOptions_ = {
+      headers : new HttpHeaders({
+        'Content-Type': 'Application/json',
+        'Authorization': 'Token ' + this.cookie.get('token')
+      })
+    };
+    let data = {
+      "user_id":user_id,
+      "group_id": group_id,
+      "project_id": this.cookie.get('project_id')
+    }
+    this.http.post(url, {...data}, httpOptions_).subscribe(
+      data => {
+        console.log(data)
+        this.groups = data;
+      },
+      error1 => console.log(error1.statusText),
+      () => {
+        this.route("all-tasks")
+      }
+    );
   }
-
-  parseJwt (data) {
-    console.log("in parseJwt")
-    console.log(data)
-    let token = data['access'];
-    let base64Url = token.split('.')[1];
-    let base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-    let jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
-        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-    }).join(''));
-
-    return JSON.parse(jsonPayload);
-};
-
-
 }
 

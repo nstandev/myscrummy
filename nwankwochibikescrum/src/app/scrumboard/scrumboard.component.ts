@@ -1,6 +1,6 @@
 import {Component, OnDestroy, OnInit} from '@angular/core';
 import {DataService} from "../data.service";
-import { Subscription } from "rxjs";
+import {Observable, Subscription} from "rxjs";
 import {DragulaService} from "ng2-dragula";
 import {CookieService} from "ngx-cookie-service";
 import {User} from "../user";
@@ -18,6 +18,7 @@ export class ScrumboardComponent implements OnInit, OnDestroy {
   private sub1: Subscription;
   private sub2: Subscription;
   private user_array: User [] = [];
+  public user_role
 
   constructor(private _dataService: DataService, private _dragula: DragulaService, private _cookie: CookieService) {
     this.dataService = this._dataService
@@ -35,13 +36,7 @@ export class ScrumboardComponent implements OnInit, OnDestroy {
         console.log(source.className)
         console.log(el)
 
-        // returns true if you're the project owner
-        if (_dataService.project_owner == this._cookie.get('username'))
-          return true
-
-        // returns true if source contains your goal
-        if(this._cookie.get('username') == source.className)
-          return true
+        return true
       },
       accepts: (el, target, source) => {
         // alert(typeof target.id)
@@ -49,17 +44,22 @@ export class ScrumboardComponent implements OnInit, OnDestroy {
         // if(source.className == "Owner")
         //   return true
         console.log(this._dataService.project_owner)
-        if (_dataService.project_owner == this._cookie.get('username'))
+        // if (_dataService.project_owner == this._cookie.get('username'))
+        //   return true
+        //
+        //
+        // if (_dataService.project_owner != this._cookie.get('username') && target.id == "4") {
+        //   return false
+        // }
+        //
+        // if (_dataService.project_owner != this._cookie.get('username') && target.className == this._cookie.get('username')) {
+        //   return true
+        // }
+        //
+        // return false
+
+        if (target.id != "4")
           return true
-
-
-        if (_dataService.project_owner != this._cookie.get('username') && target.id == "4") {
-          return false
-        }
-
-        if (_dataService.project_owner != this._cookie.get('username') && target.className == this._cookie.get('username')) {
-          return true
-        }
 
         return false
       }
@@ -82,6 +82,10 @@ export class ScrumboardComponent implements OnInit, OnDestroy {
     })
     this._dataService.setUsers()
 
+
+
+    console.log("COOKIE COOKIE: ",this._cookie.get("user_project_role_name"))
+    this.user_role = this._cookie.get("user_project_role_name")
   }
 
   ngOnInit() {
@@ -95,6 +99,9 @@ export class ScrumboardComponent implements OnInit, OnDestroy {
     this._dataService.getStatusList();
 
     // this.init()
+    // console.log("COOKIE COOKIE: ",this._cookie.get("user_project_role_name"))
+    // this.user_role = this._cookie.get("user_project_role_name")
+    // this.user_role.subscribe()
   }
 
   init(){

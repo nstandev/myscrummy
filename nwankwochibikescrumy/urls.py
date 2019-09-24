@@ -26,6 +26,8 @@ router.register(r'scrumusers', views.ScrumUserSerializerViewSet)
 router.register(r'status', views.GoalStatusSerializerViewSet)
 router.register(r'projects', views.ProjectSerializerViewSet)
 router.register(r'scrumprojects', views.ProjectSerializerAuthViewSet)
+router.register(r'groups', views.GroupSerializerViewSet)
+router.register(r'project-roles', views.ProjectRolesSerializerViewSet)
 
 
 urlpatterns = [
