@@ -33,7 +33,7 @@
                 </ng-container>
               </td>
             </ng-container>
-            <td id="remove">
+            <td dragula="GOAL" id="remove">
               <ng-container *ngFor="let goal of dataService.user_for_selected_project.goals">
                 <div class="task-div deleted-task" *ngIf="goal.is_deleted == true">
                   <div class="goal-content">

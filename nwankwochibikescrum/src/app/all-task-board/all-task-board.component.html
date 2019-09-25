@@ -5,7 +5,7 @@
     <a class="nav-btns" routerLink="/all-tasks">All tasks</a>
     <a class="nav-btns" routerLink="/scrumboard">My tasks</a>
     <a class="nav-btns" routerLink="/add-goal">create new goal</a>
-    <a *ngIf="this.dataService.user_role_id < 2" class="nav-btns" routerLink="/change-role">change role</a>
+    <a *ngIf="this.dataService.user_role_id < 2 || this.dataService.user_role_id == 4" class="nav-btns" routerLink="/change-role">change role</a>
 </div>
 <div>
   <table (click)="onTableClick($event)">
@@ -34,7 +34,7 @@
                 </ng-container>
               </td>
             </ng-container>
-            <td id="remove">
+            <td dragula="GOAL" id="remove" [attr.data-name]="user.id">
               <ng-container *ngFor="let goal of user.goals">
                 <div class="task-div deleted-task" *ngIf="goal.is_deleted == true">
                   <div class="goal-content">

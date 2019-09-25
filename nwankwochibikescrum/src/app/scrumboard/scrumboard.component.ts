@@ -39,27 +39,16 @@ export class ScrumboardComponent implements OnInit, OnDestroy {
         return true
       },
       accepts: (el, target, source) => {
-        // alert(typeof target.id)
-        //returns true if
-        // if(source.className == "Owner")
-        //   return true
         console.log(this._dataService.project_owner)
-        // if (_dataService.project_owner == this._cookie.get('username'))
-        //   return true
-        //
-        //
-        // if (_dataService.project_owner != this._cookie.get('username') && target.id == "4") {
-        //   return false
-        // }
-        //
-        // if (_dataService.project_owner != this._cookie.get('username') && target.className == this._cookie.get('username')) {
-        //   return true
-        // }
-        //
-        // return false
 
-        if (target.id != "4")
+        let role = this.dataService.user_role_id
+
+        if(role == 1 || role == 3 || role == 4)
           return true
+
+        if (role == 2)
+          if (target.id != "4")
+            return true
 
         return false
       }

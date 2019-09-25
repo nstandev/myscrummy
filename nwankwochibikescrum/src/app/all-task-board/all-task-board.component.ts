@@ -88,8 +88,9 @@ export class AllTaskBoardComponent implements OnInit {
             return true
           }
         }else{//QA
-          if (target.getAttribute("data-name") == source.getAttribute("data-name") && target.id == "4") {
-            return true
+          if (target.getAttribute("data-name") == source.getAttribute("data-name")) {
+            if (target.id == "4" || target.id == "remove")
+              return true
           }
         }
 
